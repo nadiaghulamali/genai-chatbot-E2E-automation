@@ -1,200 +1,132 @@
-GenAI Chatbot E2E Automation Framework
-Playwright · TypeScript · AI Validation · Arabic + English · Security Tests
+# GenAI Chatbot E2E Automation Framework  
+### Playwright · TypeScript · AI Validation · Arabic + English · Security Tests
 
-This repository contains a complete end-to-end automation test suite for the UAsk GenAI Chatbot, built using Playwright + TypeScript.
+This repository contains a complete end-to-end automation test suite for the UAsk GenAI Chatbot, built using Playwright + TypeScript.  
+It validates UI behaviour, chat functionality, AI responses, fallback logic, security, and captcha detection.
 
-It tests UI, chat functionality, AI response quality, fallback logic, security behavior, and captcha detection.
+---
 
-📘 Features
-1. UI Automation (English & Arabic)
+## ⭐ Features
 
-Validates chat container visibility
+### 1. UI Automation (English & Arabic)
+- Validates chat container visibility  
+- Verifies ARIA roles (listbox, option)  
+- Validates user input, send button, agent messages  
 
-Verifies ARIA roles (listbox, option)
+### 2. AI Response Validation  
+Ensures each AI answer meets rules such as:  
+- Minimum length  
+- Required keywords  
+- Must include official UAE link (u.ae)  
+- Forbidden hallucination phrases  
+- No invalid HTML  
 
-Checks input textbox, send button, message rendering
+### 3. Fallback Tests  
+Checks chatbot handling of gibberish, noise, empty inputs.
 
-Supports RTL Arabic interface
+### 4. Security Tests  
+Validates protection against:  
+- XSS  
+- HTML injection  
+- Jailbreak phrases  
+- System prompt override  
 
-2. AI Response Validation
+### 5. CAPTCHA Detection  
+Automatically stops the test if CAPTCHA appears.
 
-Each chatbot answer is validated for:
+### 6. Page Object Model  
+- UAskChatPage  
+- DisclaimerModal  
+- CaptchaGuard  
+- responseValidator  
+- testData  
 
-Minimum required length
 
-Required keywords
+## 🚀 Setup Instructions
 
-Forbidden keywords to avoid hallucination
-
-Clean HTML (no <script>, no broken tags)
-
-Must include UAE official links (u.ae)
-
-3. Fallback Behaviour
-
-Ensures bot responds correctly to:
-
-Random gibberish
-
-Empty input
-
-Noise characters
-
-4. Prompt Injection & Security Tests
-
-Detects and prevents issues such as:
-
-XSS attacks
-
-HTML injection
-
-Jailbreak prompts
-
-System-prompt override attempts
-
-5. Captcha Detection
-
-If CAPTCHA appears:
-
-Tests stop safely
-
-Prevents false UI failures
-
-Makes assignment automation stable
-
-6. Modular Page Object Model
-
-UAskChatPage — all chatbot actions
-
-DisclaimerModal — supports EN + AR disclaimer popups
-
-CaptchaGuard — safe CAPTCHA detection
-
-responseValidator.ts — AI content checks
-
-📁 Project Structure
-genai-chatbot-E2E-automation/
-│
-├── src/
-│   ├── components/
-│   │   ├── disclaimerModal.ts
-│   │   ├── captchaGuard.ts
-│   ├── pages/
-│   │   └── uaskChatPage.ts
-│   ├── utils/
-│   │   └── responseValidator.ts
-│   ├── data/
-│   │   └── testData.ts
-│
-├── tests/
-│   ├── ui/
-│   │   ├── chat-ui.spec.ts
-│   │   ├── chat-ui-arabic.spec.ts
-│   ├── ai/
-│   │   └── response-validation.spec.ts
-│   ├── security/
-│       └── injection.spec.ts
-│
-├── playwright.config.ts
-├── package.json
-└── README.md
-
-🚀 Installation
-1️⃣ Clone the project
-git clone <your-repo-url>
+### 1. Clone the repository
+git clone <your-repo-url>  
 cd genai-chatbot-E2E-automation
 
-2️⃣ Install dependencies
+### 2. Install packages
 npm install
 
-3️⃣ Install Playwright browsers
+### 3. Install Playwright browsers
 npx playwright install
 
-▶️ Running Tests
-Run ALL tests
+---
+
+## ▶️ Running Tests
+
+### Run all tests
 npx playwright test
 
-Run only UI tests
+### Run UI tests
 npx playwright test tests/ui
 
-Run English AI validation tests
+### Run English AI validation
 npx playwright test tests/ai/response-validation.spec.ts
 
-Run security tests
+### Run security tests
 npx playwright test tests/security/injection.spec.ts
 
-Run tests in headed mode
+### Run headed mode
 npx playwright test --headed
 
-Run single file
+### Run a specific test
 npx playwright test chat-ui-arabic.spec.ts
 
-📊 Viewing HTML Report
-npx playwright show-report
+---
 
+## 📊 HTML Report
 
-If default port is busy:
-
+npx playwright show-report  
+If port is busy:  
 npx playwright show-report --port=9999
 
-🌐 Base URLs Used (No .env required)
-EN → https://beta-ask.u.ae/en/uask
-AR → https://beta-ask.u.ae/ar/uask
+---
 
+## 🌐 Base URLs 
 
-Hard-coded inside page object for simplicity in assignments.
+English: https://beta-ask.u.ae/en/uask  
+Arabic: https://beta-ask.u.ae/ar/uask
 
-🧪 Dataset Model
+---
 
-Dataset (testData.ts) supports both English and Arabic:
+## 🧪 Test Data Structure
 
-export type TestData = {
-  en: LanguageTestGroup;
-  ar: LanguageTestGroup;
-};
+Dataset includes:  
+- happy_path  
+- fallback  
+- security  
 
+Supports English and Arabic.
 
-Each group contains:
+---
 
-happy_path
+## 🛡️ CAPTCHA Handling
 
-fallback
+CaptchaGuard detects:  
+- iframe presence  
+- Google checkbox visibility  
+If present → test stops intentionally.
 
-security
+---
 
-🛡️ Captcha Handling
+## 🧩 Tech Stack
 
-If CAPTCHA appears during execution:
+Automation: Playwright  
+Language: TypeScript  
+Architecture: POM  
+Validation: Custom AI rules  
+Security: XSS / Injection
 
-Framework detects it through iframe inspection
+---
 
-Tests automatically fail with:
-"CAPTCHA detected — automation cannot proceed"
+## 🏁 Summary
 
-This prevents false negative UI test failures.
-
-🧩 Tech Stack
-Category	Technology
-Automation	Playwright
-Language	TypeScript
-Design Pattern	Page Object Model (POM)
-Validation	Rule-based AI response checks
-Security	XSS + prompt-injection detection
-🏁 Summary
-
-This framework demonstrates:
-✔ Well-structured Playwright test design
-✔ Clean and scalable Page Objects
-✔ Real AI validation (content checks)
-✔ English + Arabic interface testing
-✔ Production-style assignment solution
-
-It is suitable for:
-
-Interview assignments
-
-Project demos
-
-GenAI chatbot validations
-
-Secure UI automation
+This framework demonstrates:  
+- UI + AI validation  
+- Arabic + English support  
+- Security and fallback tests  
+- Clean Page Object Model 
