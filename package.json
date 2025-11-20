@@ -1,0 +1,31 @@
+{
+  "name": "genai-chatbot-e2e-automation",
+  "version": "1.0.0",
+  "description": "E2E & AI/ML-focused Playwright tests for UAE uAsk government chatbot",
+  "main": "index.js",
+  "scripts": {
+  
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test tests/ui",
+    "test:ai": "npx playwright test tests/ai",
+    "test:security": "npx playwright test tests/security",
+    "test:i18n": "npx playwright test tests/i18n",
+    "report": "npx playwright show-report"
+ 
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nadiaghulamali/genai-chatbot-E2E-automation.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nadiaghulamali/genai-chatbot-E2E-automation/issues"
+  },
+  "homepage": "https://github.com/nadiaghulamali/genai-chatbot-E2E-automation#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.1"
+  }
+}
