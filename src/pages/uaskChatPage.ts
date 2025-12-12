@@ -42,7 +42,7 @@ export class UAskChatPage {
         });
 
         await this.disclaimer.acceptIfVisible();
-        await this.captcha.failIfPresent();
+        await this.captcha.skipIfCaptchaAppearsWithin(12000);
 
         await expect(this.page.locator('h5.message-title[role="heading"]')).toHaveCount(1);
 
@@ -54,34 +54,36 @@ export class UAskChatPage {
         });
 
         await this.disclaimer.acceptIfVisible();
-        await this.captcha.failIfPresent();
+        await this.captcha.skipIfCaptchaAppearsWithin(12000);
 
 
         await expect(this.page.locator('h5.message-title[role="heading"]')).toHaveCount(1);
 
     }
 
-
-
-
-
     async sendMessage(message: string) {
-        // Ensure no modal or captcha blocks the UI
-
-        await this.chatInput.click({ force: true });
         await this.chatInput.fill(message);
+        const trimmed = message.trim();
 
+        // Empty input fallback: button SHOULD stay disabled
+        if (!trimmed) {
+            await expect(this.sendButton).toBeDisabled();
+            return;
+        }
+
+        // Normal flow
+        await this.sendButton.waitFor({ state: 'visible', timeout: 8000 });
+        await expect(this.sendButton).toBeVisible();
         await expect(this.sendButton).toBeEnabled({ timeout: 10000 });
-        await this.sendButton.click({ force: true });
-        await this.captcha.failIfPresent();
+
+        await this.sendButton.click();
+
+        // 🔹 After sending, give CAPTCHA a chance to appear
+        await this.captcha.skipIfCaptchaAppearsWithin(12000);
     }
 
-
-    // Agent message retrieval
-
-
     async getLastAgentMessageText(): Promise<string> {
-        await this.captcha.failIfPresent();
+        await this.captcha.skipIfCaptchaAppearsWithin(12000);
 
         // Wait until at least one agent message exists
         await this.page.waitForFunction(() => {
@@ -91,7 +93,7 @@ export class UAskChatPage {
             return msgs.length > 0;
         }, { timeout: 30000 });
 
-        await this.captcha.failIfPresent();
+        await this.captcha.skipIfCaptchaAppearsWithin(12000);
 
 
         await this.page.waitForFunction(() => {
@@ -113,10 +115,6 @@ export class UAskChatPage {
     }
 
 
-
-    // Wait for next agent message
-
-
     async waitForNextAgentMessage(previousCount: number) {
         await this.page.waitForFunction(
             ({ selector, oldCount }) => {
@@ -130,9 +128,6 @@ export class UAskChatPage {
             { timeout: 40000 }
         );
     }
-
-
-    // Get total agent messages
 
 
     async getAgentMessageCount(): Promise<number> {

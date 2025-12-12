@@ -1,50 +1,61 @@
-import { Page, Locator } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 export class CaptchaGuard {
-  private page: Page;
+  private readonly captcha: Locator;
 
-  private iframe: Locator;
-  private iframeContentLocator: Locator; 
-
-  constructor(page: Page) {
-    this.page = page;
-
-    //  Locate the reCAPTCHA iframe
-    this.iframe = page.locator('iframe[src*="recaptcha"]').first();
-
-    this.iframeContentLocator = this.iframe
-      .frameLocator(':scope')
-      .locator('#recaptcha-anchor');
+  constructor(private readonly page: Page) {
+    this.captcha = page.locator('iframe[src*="recaptcha"], .captcha-container');
   }
 
-  // Detect CAPTCHA presence 
- 
-  async isPresent(): Promise<boolean> {
+  /**
+   * Instant snapshot check – no waiting.
+   * Returns true if any CAPTCHA element is visible *right now*.
+   */
+  async isPresentNow(): Promise<boolean> {
     try {
-      // Step 1: Check if the iframe itself is attached to the DOM
-      if (!(await this.iframe.isVisible())) {
-        return false;
-      }
-
-      // Step 2: Check if the checkbox element inside the iframe is visible
-      // This is the most reliable check. Use waitFor() for up to 1 second
-      // instead of isVisible() alone to handle brief rendering delays.
-      await this.iframeContentLocator.waitFor({ state: 'visible', timeout: 1000 });
-      return true;
-
-    } catch (e) {
-      // If waitFor fails (times out), the element is not present/visible, so return false.
+      return await this.captcha.first().isVisible();
+    } catch {
       return false;
     }
   }
 
-  // Throw an error if CAPTCHA is detected
-  async failIfPresent() {
-    if (await this.isPresent()) {
+  /**
+   * Waits up to `timeoutMs` to see if CAPTCHA becomes visible.
+   * Returns true if it appears within that window, false otherwise.
+   */
+  async appearsWithin(timeoutMs = 8000): Promise<boolean> {
+    try {
+      await this.captcha.first().waitFor({ state: 'visible', timeout: timeoutMs });
+      return true;  // appeared
+    } catch {
+      return false; // did not appear in that window
+    }
+  }
+
+  /**
+   *  fail immediately if CAPTCHA already visible.
+   * 
+   */
+  async failIfPresentNow() {
+    if (await this.isPresentNow()) {
       throw new Error(
         'CAPTCHA detected: Automation cannot continue. ' +
         'Disable CAPTCHA for test environments.'
       );
     }
   }
+
+  /**
+   * Preferred: fail if CAPTCHA appears within some time AFTER an action 
+   */
+  async skipIfCaptchaAppearsWithin(testInfo: any, timeoutMs = 8000) {
+    const appeared = await this.appearsWithin(timeoutMs);
+
+    if (appeared) {
+      testInfo.skip(
+        `CAPTCHA appeared within ${timeoutMs}ms → skipping this test.`
+      );
+    }
+  }
+
 }

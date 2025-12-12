@@ -6,15 +6,24 @@ export class DisclaimerModal {
   private modalWindow: Locator;
   private acceptButton: Locator;
   private loader: Locator;
+  private disclaimerDialog: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    // Official modal selector
     this.modalWindow = page.locator('ngb-modal-window.fade.show');
 
-    // Buttons
-    this.acceptButton = page.locator('button[aria-label="Accept and continue"], button[aria-label="قبول ومتابعة"]');
+    // Match either "Disclaimer" or anything starting with "إخلاء" for AR
+    this.disclaimerDialog = page.getByRole('dialog', {
+      name: /Disclaimer|إخلاء/i,
+    });
+
+    this.acceptButton = this.disclaimerDialog.getByRole('button', {
+      name: /Accept and continue|قبول|متابعة/i,
+    });
+
+
+
 
     // Loader overlay
     this.loader = page.locator('.block-ui-wrapper.block-ui-main.active');
@@ -26,7 +35,7 @@ export class DisclaimerModal {
     await this.loader.waitFor({
       state: 'hidden',
       timeout: 8000
-    }).catch(() => {});
+    }).catch(() => { });
   }
 
   // Check if modal appears 
@@ -47,12 +56,17 @@ export class DisclaimerModal {
 
   async acceptIfVisible() {
     await this.waitForLoaderToDisappear();
-
-    // Modal appears slowly 
     const shown = await this.appearsWithin(12000);
-    if (!shown) return; // if Modal does not exist for this session
+    if (!shown) return; // no modal in this session – nothing to do
 
-    await this.acceptButton.click({ force: true }).catch(() => {});
-    await this.modalWindow.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+    await this.modalWindow.waitFor({ state: 'visible', timeout: 8000 });
+
+    await this.acceptButton.waitFor({ state: 'visible', timeout: 8000 });
+    await this.page.waitForTimeout(20000);
+
+    await this.acceptButton.click();
+
+    //  Wait for modal to disappear 
+    await this.modalWindow.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => { /* ignore if it sticks */ });
   }
 }
